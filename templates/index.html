@@ -1,0 +1,602 @@
+<!DOCTYPE html>
+<html lang="en">
+    <head>
+        <meta charset="UTF-8">
+        <meta name="viewport" content="width=device-width, initial-scale=1.0">
+        <link rel="icon" href="{{ url_for('static', filename='brain-icon.png') }}">
+        <title> Alzheimer's Disease Prediction</title>
+        <!-- Bootstrap CSS -->
+        <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0/dist/css/bootstrap.min.css" rel="stylesheet">
+        <!-- Font Awesome -->
+        <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.0.0/css/all.min.css">
+        <!-- AOS Animation Library -->
+        <link href="https://unpkg.com/aos@2.3.1/dist/aos.css" rel="stylesheet">
+    <style>
+        :root {
+            --primary-color: #4f46e5;
+            --secondary-color: #4338ca;
+            --accent-color: #e0e7ff;
+            --gradient-start: #4f46e5;
+            --gradient-end: #06b6d4;
+            --success-color: #10b981;
+            --warning-color: #f59e0b;
+            --error-color: #ef4444;
+        }
+
+        body {
+            background: linear-gradient(135deg, #f6f7ff 0%, #fff 100%);
+            min-height: 100vh;
+        }
+
+        /* Navbar Styles */
+        .navbar {
+            background: rgba(255, 255, 255, 0.95) !important;
+            backdrop-filter: blur(10px);
+            box-shadow: 0 4px 6px -1px rgba(0, 0, 0, 0.1);
+            transition: all 0.3s ease;
+        }
+
+        .navbar.scrolled {
+            padding: 0.5rem 1rem;
+            background: rgba(255, 255, 255, 0.98) !important;
+        }
+
+        .navbar-brand {
+            color: var(--primary-color) !important;
+            font-weight: 700;
+            font-size: 1.5rem;
+            transition: all 0.3s ease;
+        }
+
+        .navbar-brand:hover {
+            transform: translateY(-2px);
+        }
+
+        .nav-link {
+            position: relative;
+            padding: 0.5rem 1rem;
+            transition: all 0.3s ease;
+        }
+
+        .nav-link::after {
+            content: '';
+            position: absolute;
+            width: 0;
+            height: 2px;
+            bottom: 0;
+            left: 50%;
+            background: var(--primary-color);
+            transition: all 0.3s ease;
+        }
+
+        .nav-link:hover::after {
+            width: 100%;
+            left: 0;
+        }
+
+        /* Doctor Info Badge */
+        .doctor-info {
+            display: flex;
+            align-items: center;
+            padding: 0.5rem 1.5rem;
+            background: linear-gradient(135deg, var(--gradient-start), var(--gradient-end));
+            border-radius: 30px;
+            color: white;
+            margin-right: 1rem;
+            transition: all 0.3s ease;
+            box-shadow: 0 2px 10px rgba(79, 70, 229, 0.2);
+        }
+
+        .doctor-info:hover {
+            transform: translateY(-2px);
+            box-shadow: 0 4px 15px rgba(79, 70, 229, 0.3);
+        }
+
+        .doctor-info i {
+            margin-right: 0.75rem;
+            font-size: 1.1rem;
+        }
+
+        /* Welcome Animation */
+        .welcome-animation {
+            position: fixed;
+            top: 0;
+            left: 0;
+            width: 100%;
+            height: 100%;
+            background: linear-gradient(135deg, var(--gradient-start), var(--gradient-end));
+            display: flex;
+            justify-content: center;
+            align-items: center;
+            z-index: 9999;
+            animation: fadeOut 1s ease 2s forwards;
+        }
+
+        .welcome-text {
+            color: white;
+            font-size: 2.5rem;
+            font-weight: 700;
+            opacity: 0;
+            transform: translateY(20px);
+            animation: welcomeText 1s ease 0.5s forwards;
+        }
+
+        /* Main Content Cards */
+        .main-card {
+            background: white;
+            border-radius: 20px;
+            box-shadow: 0 10px 30px rgba(0, 0, 0, 0.1);
+            overflow: hidden;
+            transition: all 0.3s ease;
+        }
+
+        .main-card:hover {
+            transform: translateY(-5px);
+            box-shadow: 0 15px 40px rgba(0, 0, 0, 0.15);
+        }
+
+        .upload-section {
+            padding: 2rem;
+        }
+
+        .upload-area {
+            border: 2px dashed var(--primary-color);
+            border-radius: 15px;
+            padding: 2rem;
+            text-align: center;
+            background: rgba(79, 70, 229, 0.03);
+            transition: all 0.3s ease;
+        }
+
+        .upload-area:hover {
+            border-color: var(--gradient-end);
+            background: rgba(79, 70, 229, 0.06);
+            transform: scale(1.02);
+        }
+
+        .upload-icon {
+            font-size: 3rem;
+            background: linear-gradient(135deg, var(--gradient-start), var(--gradient-end));
+            -webkit-background-clip: text;
+            -webkit-text-fill-color: transparent;
+            margin-bottom: 1rem;
+        }
+
+        /* Buttons */
+        .btn-primary {
+            background: linear-gradient(135deg, var(--gradient-start), var(--gradient-end));
+            border: none;
+            padding: 0.75rem 2rem;
+            border-radius: 10px;
+            font-weight: 600;
+            transition: all 0.3s ease;
+            box-shadow: 0 4px 15px rgba(79, 70, 229, 0.2);
+        }
+
+        .btn-primary:hover {
+            transform: translateY(-2px);
+            box-shadow: 0 6px 20px rgba(79, 70, 229, 0.3);
+        }
+
+        /* Alerts */
+        .login-required-alert {
+            position: fixed;
+            top: 20px;
+            right: 20px;
+            z-index: 1000;
+            background: white;
+            border-left: 4px solid var(--warning-color);
+            padding: 1rem 1.5rem;
+            border-radius: 10px;
+            box-shadow: 0 4px 15px rgba(0, 0, 0, 0.1);
+            display: none;
+            animation: slideIn 0.5s ease forwards;
+        }
+
+        /* Loading Animation */
+      .loading-overlay {
+            position: fixed;
+            top: 0;
+            left: 0;
+            width: 100%;
+            height: 100%;
+            background: rgba(255, 255, 255, 0.9);
+            z-index: 9999;
+            display: none;
+        }
+
+        .loading-content {
+            position: absolute;
+            top: 50%;
+            left: 50%;
+            transform: translate(-50%, -50%);
+            background: white;
+            padding: 2rem;
+            border-radius: 10px;
+            box-shadow: 0 0 20px rgba(0, 0, 0, 0.1);
+            width: 90%;
+            max-width: 400px;
+            text-align: center;
+        }
+        .loading-spinner {
+            margin-bottom: 1.5rem;
+        }
+
+        .loading-spinner i {
+            font-size: 3rem;
+            color: #4f46e5;
+            animation: pulse 2s infinite;
+        }
+
+        .loading-icon {
+            margin-bottom: 1.5rem;
+            color: #4f46e5;
+        }
+        .loading-progress {
+            margin-top: 1rem;
+        }
+        .percentage {
+            font-size: 2rem;
+            font-weight: bold;
+            color: #4f46e5;
+            margin: 1rem 0;
+        }
+
+        .status-text {
+            margin: 1rem 0;
+            color: #666;
+        }
+
+        .progress {
+            height: 10px;
+            background: #f0f0f0;
+            border-radius: 5px;
+            overflow: hidden;
+            margin: 1rem 0;
+        }
+
+        .progress-bar {
+            width: 0%;
+            height: 100%;
+            background: #4f46e5;
+            transition: width 0.3s ease;
+        }
+
+        @keyframes pulse {
+            0% {
+                transform: scale(1);
+                opacity: 1;
+            }
+            50% {
+                transform: scale(1.1);
+                opacity: 0.7;
+            }
+            100% {
+                transform: scale(1);
+                opacity: 1;
+            }
+        }
+        /* Animations */
+        @keyframes fadeOut {
+            from { opacity: 1; }
+            to { opacity: 0; visibility: hidden; }
+        }
+
+        @keyframes welcomeText {
+            from { 
+                opacity: 0;
+                transform: translateY(20px);
+            }
+            to { 
+                opacity: 1;
+                transform: translateY(0);
+            }
+        }
+
+        @keyframes slideIn {
+            from {
+                opacity: 0;
+                transform: translateX(100px);
+            }
+            to {
+                opacity: 1;
+                transform: translateX(0);
+            }
+        }
+
+        /* Footer */
+        footer {
+            background: linear-gradient(135deg, var(--gradient-start), var(--gradient-end));
+            color: white;
+            margin-top: 4rem;
+        }
+
+        footer p {
+            opacity: 0.9;
+        }
+
+        /* Responsive Design */
+        @media (max-width: 768px) {
+            .doctor-info {
+                margin: 1rem 0;
+            }
+            
+            .welcome-text {
+                font-size: 2rem;
+                padding: 0 1rem;
+                text-align: center;
+            }
+        }
+    </style>
+</head>
+<body>
+    <!-- Welcome Animation -->
+    <div class="welcome-animation">
+        <h1 class="welcome-text">Welcome to Alzheimer's Disease Prediction</h1>
+    </div>
+
+    <!-- Navigation -->
+    <nav class="navbar navbar-expand-lg navbar-light fixed-top">
+        <div class="container">
+            <a class="navbar-brand" href="{{ url_for('home') }}" data-aos="fade-right">
+                <i class="fas fa-brain me-2"></i>Alzheimer's Prediction
+            </a>
+            <button class="navbar-toggler" type="button" data-bs-toggle="collapse" data-bs-target="#navbarNav">
+                <span class="navbar-toggler-icon"></span>
+            </button>
+            <div class="collapse navbar-collapse" id="navbarNav">
+                <ul class="navbar-nav ms-auto">
+                    <li class="nav-item" data-aos="fade-down" data-aos-delay="100">
+                        <a class="nav-link active" href="{{ url_for('home') }}">
+                            <i class="fas fa-home me-1"></i>Home
+                        </a>
+                    </li>
+                    {% if current_user.is_authenticated %}
+                        <li class="nav-item" data-aos="fade-down" data-aos-delay="200">
+                            <div class="doctor-info">
+                                <i class="fas fa-user-md"></i>
+                                <span>Dr. {{ current_user.name }}</span>
+                            </div>
+                        </li>
+                        <li class="nav-item" data-aos="fade-down" data-aos-delay="300">
+                            <a class="nav-link" href="{{ url_for('dashboard') }}">
+                                <i class="fas fa-tachometer-alt me-1"></i>Dashboard
+                            </a>
+                        </li>
+                        <li class="nav-item" data-aos="fade-down" data-aos-delay="400">
+                            <a class="nav-link" href="{{ url_for('logout') }}">
+                                <i class="fas fa-sign-out-alt me-1"></i>Logout
+                            </a>
+                        </li>
+                    {% else %}
+                        <li class="nav-item" data-aos="fade-down" data-aos-delay="200">
+                            <a class="nav-link" href="{{ url_for('register') }}">
+                                <i class="fas fa-user-plus me-1"></i>Register
+                            </a>
+                        </li>
+                        <li class="nav-item" data-aos="fade-down" data-aos-delay="300">
+                            <a class="nav-link" href="{{ url_for('login') }}">
+                                <i class="fas fa-sign-in-alt me-1"></i>Login
+                            </a>
+                        </li>
+                    {% endif %}
+                </ul>
+            </div>
+        </div>
+    </nav>
+
+    <div id="loadingOverlay" class="loading-overlay">
+        <div class="loading-content">
+            <div class="loading-icon">
+                <i class="fas fa-brain fa-pulse fa-3x"></i>
+            </div>
+            <div class="loading-progress">
+                <div class="percentage" id="percentageText">0%</div>
+                <div class="status-text" id="statusText">Processing...</div>
+                <div class="progress">
+                    <div class="progress-bar" id="progressBar"></div>
+                </div>
+            </div>
+        </div>
+    </div>
+    <!-- Main Content -->
+    <br><br><br><div class="container my-5">
+        <div class="row justify-content-center">
+            <div class="col-md-8">
+                <div class="card main-card">
+                    <div class="card-body"><br>
+                        <h1 class="text-center mb-4">Disease Progression Prediction</h1>
+
+                        {% if error %}
+                        <div class="alert alert-danger alert-dismissible fade show" role="alert">
+                            <i class="fas fa-exclamation-circle me-2"></i>{{ error }}
+                            <button type="button" class="btn-close" data-bs-dismiss="alert"></button>
+                        </div>
+                        {% endif %}
+
+                        <div class="upload-section text-center">
+                            <form action="{{ url_for('predict') }}" method="post" enctype="multipart/form-data" onsubmit="return validateForm()">
+                                <div class="upload-area mb-4">
+                                    <i class="fas fa-image upload-icon"></i>
+                                    <h3>Upload Single Image</h3>
+                                    <p class="text-muted">Upload an individual MRI image (Supported formats: JPG, PNG, JPEG).</p>
+                                    <input type="file" id="single-image" name="file" class="form-control mb-3" accept="image/*">
+                                </div>
+
+                                <div class="upload-area mb-4">
+                                    <i class="fas fa-folder-open upload-icon"></i>
+                                    <h3>Upload Folder</h3>
+                                    <p class="text-muted">Upload a folder containing multiple MRI images (Supported formats: JPG, PNG, JPEG).</p>
+                                    <input type="file" id="folder" name="folder[]" class="form-control" webkitdirectory multiple accept="image/*">
+                                    <div id="selected-files" class="mt-2"></div>
+                                </div>
+
+                                <button type="submit" class="btn btn-primary btn-lg">
+                                    <i class="fas fa-magic me-2"></i>Predict
+                                </button>
+                            </form>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <!-- About Section -->
+    <section id="about" class="bg-light py-5">
+        <div class="container">
+            <div class="row">
+                <div class="col-md-8 mx-auto text-center">
+                    <h2 class="mb-4">About Our Prediction Tool</h2>
+                    <p class="lead">This tool leverages the ResNet architecture to predict Alzheimer's disease stages, allowing uploads of both individual images and folders for batch processing, streamlining diagnostics for healthcare professionals.</p>
+                    <h3 class="mt-5">Key Features:</h3>
+                    <ul class="list-unstyled">
+                        <li><strong>Architecture:</strong> ResNet (Residual Neural Network)</li>
+                        <li><strong>Accuracy:</strong> 92% validated on curated datasets</li>
+                        <li><strong>Batch Processing:</strong> Predict stages for multiple images simultaneously</li>
+                        <li><strong>Usability:</strong> Intuitive interface for non-technical users</li>
+                    </ul>
+                </div>
+            </div>
+        </div>
+    </section>
+
+    <!-- Footer -->
+    
+        <div class="container text-center">
+            <p class="text-muted mb-0">
+               <br> <strong>Medical Disclaimer:</strong> This tool is intended for informational and educational purposes only. It is not a substitute for professional medical advice, diagnosis, or treatment. Always consult your healthcare provider for any medical concerns.
+            </p>
+        </div><br>
+    <footer class="footer py-3 mt-auto">
+        <div class="container text-center">
+            <p class="mb-0">&copy; 2024 - 2025 Alzheimer's Disease Prediction By TEC Students. All rights reserved.</p>
+        </div>
+    </footer>
+
+    <!-- Bootstrap JS -->
+    
+     <script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0/dist/js/bootstrap.bundle.min.js"></script>
+    <script src="https://unpkg.com/aos@2.3.1/dist/aos.js"></script>
+    <script>
+    document.addEventListener('DOMContentLoaded', function() {
+        // Initialize AOS
+        AOS.init({
+            duration: 1000,
+            once: true
+        });
+
+        // DOM Elements
+        const form = document.querySelector('form');
+        const loadingOverlay = document.getElementById('loadingOverlay');
+        const progressBar = document.getElementById('progressBar');
+        const percentageText = document.getElementById('percentageText');
+        const statusText = document.getElementById('statusText');
+
+        // Loading stages
+        const loadingStages = [
+            'Initializing AI model...',
+            'Processing neural patterns...',
+            'Analyzing brain structures...',
+            'Detecting anomalies...',
+            'Generating report...'
+        ];
+
+        // Navbar scroll effect
+        window.addEventListener('scroll', function() {
+            const navbar = document.querySelector('.navbar');
+            if (window.scrollY > 50) {
+                navbar.classList.add('scrolled');
+            } else {
+                navbar.classList.remove('scrolled');
+            }
+        });
+
+        // Show login alert for non-authenticated users
+        {% if not current_user.is_authenticated %}
+            const loginAlert = document.getElementById('loginAlert');
+            loginAlert.style.display = 'block';
+            setTimeout(() => {
+                loginAlert.style.opacity = '0';
+                setTimeout(() => {
+                    loginAlert.style.display = 'none';
+                }, 300);
+            }, 5000);
+        {% endif %}
+
+        // File selection handler
+        document.getElementById('folder').addEventListener('change', function(e) {
+            const fileList = Array.from(e.target.files);
+            const selectedFiles = document.getElementById('selected-files');
+            selectedFiles.innerHTML = `Selected ${fileList.length} files`;
+        });
+
+        // Form validation
+        function validateForm() {
+            const singleImageInput = document.getElementById('single-image');
+            const folderInput = document.getElementById('folder');
+
+            if (!singleImageInput.files[0] && (!folderInput.files || folderInput.files.length === 0)) {
+                alert('Please select a single image or a folder containing images.');
+                return false;
+            }
+            return true;
+        }
+
+        // Loading overlay functionality
+        function showLoadingOverlay() {
+        let progress = 0;
+        let currentStage = 0;
+        loadingOverlay.style.display = 'flex';
+
+        function updateProgress() {
+            if (progress >= 99) return;
+
+            // Calculate next progress
+            const increment = Math.floor(Math.random() * 15) + 5;
+            progress = Math.min(progress + increment, 99);
+            
+            // Update progress bar and percentage
+            progressBar.style.width = `${progress}%`;
+            percentageText.textContent = `${progress}%`;
+
+            // Update status text based on progress
+            const stageIndex = Math.floor((progress / 100) * loadingStages.length);
+            if (stageIndex < loadingStages.length && stageIndex !== currentStage) {
+                currentStage = stageIndex;
+                statusText.textContent = loadingStages[currentStage];
+            }
+
+            // Continue updating if not complete
+            if (progress < 99) {
+                setTimeout(updateProgress, 500 + Math.random() * 1000);
+            } else {
+                // Complete the process while keeping 99%
+                setTimeout(() => {
+                    statusText.textContent = 'Analysis complete! kindly wait a moment';
+                    setTimeout(() => {
+                        form.submit();
+                    }, 1000);
+                }, 500);
+            }
+        }
+
+        updateProgress();
+    }
+
+
+        // Form submission handler
+        form.addEventListener('submit', function(e) {
+            e.preventDefault(); // Prevent default to display loading overlay
+
+            if (validateForm()) {
+                showLoadingOverlay(); // Show loading animation
+                setTimeout(() => {
+                    form.submit(); // Submit form after brief delay for overlay
+                }, 1000); // Adjust delay as needed for smooth user experience
+            }
+        });
+    });
+    </script>
+</body>
+</html>

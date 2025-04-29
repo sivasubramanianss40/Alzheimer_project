@@ -1,0 +1,370 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <link rel="icon" href="{{ url_for('static', filename='brain-icon.png') }}">
+    <title>Bulk Classification Results - Alzheimer's Disease Prediction</title>
+    <!-- Bootstrap CSS -->
+    <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0/dist/css/bootstrap.min.css" rel="stylesheet">
+    <!-- Custom CSS -->
+    <link rel="stylesheet" href="{{ url_for('static', filename='css/style.css') }}">
+    <!-- Font Awesome -->
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.0.0/css/all.min.css">
+    <style>
+          body {
+            background-color: #edf2f7;
+            font-family: 'Arial', sans-serif;
+            min-height: 100vh;
+            display: flex;
+            flex-direction: column;
+        }
+        .navbar {
+            background-color: #ffffff !important;
+            box-shadow: 0 2px 4px rgba(0, 0, 0, 0.1);
+        }
+
+        .navbar-brand {
+            color: #3b82f6 !important;
+            font-weight: 600;
+        }
+        .main-card {
+            border: none;
+            box-shadow: 0 6px 20px rgba(0, 0, 0, 0.1);
+            border-radius: 15px;
+            background-color: #fff;
+        }
+        .table thead {
+            background-color: #3b82f6;
+            color: white;
+        }
+
+        .table thead th {
+            font-weight: 500;
+            padding: 15px;
+        }
+
+        .table tbody tr:hover {
+            background-color: #f8fafc;
+        }
+
+        .progress {
+            height: 20px;
+            background-color: #e2e8f0;
+            border-radius: 10px;
+        }
+
+        .progress-bar {
+            background-color: #3b82f6;
+            border-radius: 10px;
+        }
+        .action-buttons .btn {
+            padding: 12px 25px;
+            font-size: 1rem;
+        }
+        .btn-primary {
+            background-color: #3b82f6;
+            border-color: #3b82f6;
+        }
+
+        .btn-primary:hover {
+            background-color: #2563eb;
+            border-color: #2563eb;
+            transform: translateY(-2px);
+        }
+
+        .btn-outline-primary {
+            color: #3b82f6;
+            border-color: #3b82f6;
+        }
+
+        .btn-outline-primary:hover {
+            background-color: #3b82f6;
+            color: white;
+            transform: translateY(-2px);
+        }
+
+        footer {
+            background-color: #222;
+            color: #fff;
+        }
+        .preview-image {
+            border-radius: 10px;
+            transition: transform 0.3s ease;
+        }
+
+        .preview-image:hover {
+            transform: scale(1.05);
+        }
+
+        .modal {
+            display: none;
+            position: fixed;
+            z-index: 1000;
+            top: 0;
+            left: 0;
+            width: 100%;
+            height: 100%;
+            background-color: rgba(0, 0, 0, 0.8); 
+            display: flex;
+            justify-content: center;
+            align-items: center;
+        }
+        
+
+        .modal-content {
+            max-width: 90%;
+            max-height: 90vh;
+        }
+
+        .modal-close {
+            position: absolute;
+            opacity: 0.8;
+            transition: opacity 0.3s ease;
+            top: 15px;
+            right: 35px;
+            color: #f1f1f1;
+            font-size: 40px;
+            font-weight: bold;
+            cursor: pointer;
+        }
+        .modal-close:hover {
+            opacity: 1;
+        }
+
+        .image-tooltip {
+            border-radius: 12px;
+            box-shadow: 0 4px 15px rgba(0, 0, 0, 0.15);
+            position: fixed;
+            z-index: 999;
+            background-color: white;
+            pointer-events: none;
+            opacity: 0;
+            transition: opacity 0.3s ease;
+        }
+
+        .image-tooltip img {
+            max-width: 500px;
+            max-height: 500px;
+            border-radius: 8px;
+        }
+        .custom-width {
+            min-width: 200px; /* Adjust to your preferred button width */
+            margin-right: 10px; /* Adds spacing between buttons */
+        }
+
+        
+        .custom-button {
+            width: 250px;
+            height: 55px;
+            border-radius: 12px;
+            font-weight: 500;
+            transition: all 0.3s ease;
+            box-shadow: 0 2px 4px rgba(0, 0, 0, 0.1);
+        }
+
+        .custom-button i {
+            margin-right: 8px; /* Consistent gap between icon and text */
+        }
+
+        .footer {
+            background-color: white;
+            border-top: 1px solid rgba(226, 232, 240, 0.8);
+            color: #4a5568;
+            padding: .5rem 0;
+            font-size: 0.875rem;
+        }
+
+        @media (max-width: 768px) {
+            .custom-button {
+                width: 100%;
+                margin-bottom: 10px;
+            }
+        }
+
+        /* Add spacing between buttons on smaller screens */
+        @media (max-width: 768px) {
+            .action-buttons .row .col-auto {
+                margin-bottom: 10px; /* Adds spacing between buttons on mobile */
+            }
+        }
+
+    </style>
+</head>
+<body>
+    <!-- Navigation -->
+    <nav class="navbar navbar-expand-lg navbar-light bg-light">
+        <div class="container">
+            <a class="navbar-brand" href="/">
+                <i class="fas fa-brain me-2"></i>Alzheimer's Prediction
+            </a>
+            <button class="navbar-toggler" type="button" data-bs-toggle="collapse" data-bs-target="#navbarNav">
+                <span class="navbar-toggler-icon"></span>
+            </button>
+            <div class="collapse navbar-collapse" id="navbarNav">
+                <ul class="navbar-nav ms-auto">
+                    <li class="nav-item">
+                        <a class="nav-link active" href="/"><i class="fas fa-home me-1"></i>Home</a>
+                    </li>
+                </ul>
+            </div>
+        </div>
+    </nav>
+
+    <!-- Bulk Result Content -->
+    <div class="container my-5">
+        <div class="row justify-content-center">
+            <div class="col-md-10">
+                <div class="card main-card">
+                    <div class="card-body p-5">
+                        <h1 class="text-center mb-5">
+                            <i class="fas fa-table me-2"></i>Classification Results
+                        </h1>
+
+                        <!-- Update the table section in bulk_result.html -->
+                        <div class="table-responsive">
+                            <table class="table table-hover align-middle">
+                                <thead>
+                                    <tr>
+                                        <th scope="col">S.No</th>
+                                        <th scope="col">Image Name</th>
+                                        <th scope="col">Original Image</th>
+                                        <th scope="col">Predicted Stage</th>
+                                        <th scope="col">Confidence Score</th>
+                                        <th scope="col">Visualization</th>
+                                    </tr>
+                                </thead>
+                                <tbody>
+                                    {% for result in results %}
+                                    <tr>
+                                        <td>{{ loop.index }}</td>
+                                        <td>{{ result.filename.split('.')[0] }}</td>
+                                        <td>
+                                            <img src="{{ result.image_path }}" 
+                                                 alt="Image {{ loop.index }}" 
+                                                 class="img-fluid rounded shadow-sm preview-image"
+                                                 data-fullsize="{{ result.image_path }}"
+                                                 style="max-height: 100px; object-fit: contain;">
+                                        </td>
+                                        <td>{{ result.prediction }}</td>
+                                        <td>
+                                            <div class="progress">
+                                                <div class="progress-bar" 
+                                                     role="progressbar" 
+                                                     style="width: {{ result.confidence }}%">
+                                                    {{ "%.2f"|format(result.confidence) }}%
+                                                </div>
+                                            </div>
+                                        </td>
+                                        <td>
+                                            {% if result.visualization_path %}
+                                            <img src="{{ result.visualization_path }}" 
+                                                 alt="Visualization {{ loop.index }}"
+                                                 class="img-fluid rounded shadow-sm preview-image"
+                                                 data-fullsize="{{ result.visualization_path }}"
+                                                 style="max-height: 100px; object-fit: contain;">
+                                            {% else %}
+                                            <span class="text-muted">N/A</span>
+                                            {% endif %}
+                                        </td>
+                                    </tr>
+                                    {% endfor %}
+                                </tbody>
+                            </table>
+                        </div>
+
+                        <div id="imageModal" class="modal" style="display: none;">
+                            <span class="modal-close">&times;</span>
+                            <img class="modal-content" id="modalImage">
+                        </div>
+                    
+                        <!-- Add tooltip div for hover preview -->
+                        <div id="imageTooltip" class="image-tooltip">
+                            <img id="tooltipImage">
+                        </div>
+
+                        <!-- Action Buttons -->
+                        <div class="action-buttons text-center mt-4">
+                            <div class="row justify-content-center">
+                                <div class="col-auto">
+                                    <a href="{{ url_for('home') }}" class="btn btn-primary btn-lg custom-button d-flex align-items-center justify-content-center">
+                                        <i class="fas fa-upload me-2"></i>Try Another Image
+                                    </a>
+                                </div>
+                                <div class="col-auto">
+                                    <button class="btn btn-outline-primary btn-lg custom-button d-flex align-items-center justify-content-center" onclick="window.print()">
+                                        <i class="fas fa-print me-2"></i>Save Result
+                                    </button>
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <!-- Footer -->
+    <footer class="footer py-3">
+        <div class="container text-center">
+            <p class="mb-0">&copy; 2024 - 2025 Alzheimer's Disease Prediction By TEC Students. All rights reserved.</p>
+        </div>
+    </footer>
+
+    <!-- Bootstrap JS -->
+    <script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0/dist/js/bootstrap.bundle.min.js"></script>
+    <script>
+        const modal = document.getElementById('imageModal');
+        const modalImg = document.getElementById('modalImage');
+        const closeBtn = document.getElementsByClassName('modal-close')[0];
+        const tooltip = document.getElementById('imageTooltip');
+        const tooltipImg = document.getElementById('tooltipImage');
+
+        // Handle image click for modal view
+        document.querySelectorAll('.preview-image').forEach(img => {
+            img.addEventListener('click', function() {
+                modal.style.display = 'flex';
+                modalImg.src = this.dataset.fullsize;
+            });
+
+            // Handle hover for tooltip preview
+            img.addEventListener('mouseover', function(e) {
+                tooltipImg.src = this.dataset.fullsize;
+                tooltip.style.opacity = '1';
+                moveTooltip(e);
+            });
+
+            img.addEventListener('mousemove', moveTooltip);
+
+            img.addEventListener('mouseout', function() {
+                tooltip.style.opacity = '0';
+            });
+        });
+
+        // Close modal when clicking close button or outside the image
+        closeBtn.onclick = function() {
+            modal.style.display = 'none';
+        }
+
+        modal.onclick = function(e) {
+            if (e.target === modal) {
+                modal.style.display = 'none';
+            }
+        }
+
+        // Move tooltip with cursor
+        function moveTooltip(e) {
+            const x = e.pageX + 20;
+            const y = e.pageY + 20;
+            
+            // Adjust position if tooltip would go off screen
+            const tooltipRect = tooltip.getBoundingClientRect();
+            const maxX = window.innerWidth - tooltipRect.width - 20;
+            const maxY = window.innerHeight - tooltipRect.height - 20;
+            
+            tooltip.style.left = `${Math.min(x, maxX)}px`;
+            tooltip.style.top = `${Math.min(y, maxY)}px`;
+        }
+    </script>
+</body>
+</html>
